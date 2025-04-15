@@ -1,5 +1,6 @@
 package com.example.capstone02_bookfriend.Service;
 
+import com.example.capstone02_bookfriend.ApiResponse.ApiException;
 import com.example.capstone02_bookfriend.Model.*;
 import com.example.capstone02_bookfriend.Repository.*;
 import lombok.RequiredArgsConstructor;
@@ -25,22 +26,21 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public Boolean addUser(User user) {
+    public void addUser(User user) {
         User checkEmail = userRepository.findUserByEmail(user.getEmail());
         if (checkEmail != null)
-            return false;
+            throw new ApiException("email is already exist");
         userRepository.save(user);
-        return true;
     }
 
-    public Boolean updateUser(Integer id, User user) {
+    public void updateUser(Integer id, User user) {
         User checkEmail = userRepository.findUserByEmail(user.getEmail());
         User oldUser = userRepository.findUserById(id);
         if (oldUser == null)
-            return false;
-        if (checkEmail!=null) {
+            throw new ApiException("user not found");
+        if (checkEmail != null) {
             if (!oldUser.getEmail().equals(user.getEmail()))
-                return false;
+                throw new ApiException("email is already used");
         }
 
         oldUser.setBalance(user.getBalance());
@@ -49,62 +49,57 @@ public class UserService {
         oldUser.setRole(user.getRole());
         oldUser.setPassword(user.getPassword());
         userRepository.save(oldUser);
-        return true;
     }
 
-    public Boolean deleteUser(Integer id) {
+    public void deleteUser(Integer id) {
         User user = userRepository.findUserById(id);
         if (user == null)
-            return false;
+            throw new ApiException("user not found or already deleted");
         userRepository.delete(user);
-        return true;
     }
 
     // endpoint 1
-    public Boolean joinGroup(Integer id, Integer group_id) {
+    public void joinGroup(Integer id, Integer group_id) {
         Groups groups = groupRepository.findGroupById(group_id);
         User user = userRepository.findUserById(id);
         Joins joins = new Joins();
         Joins checkJoin = joinRepository.findJoinsByGroup_idAndUser_id(group_id, id);
         if (groups == null || user == null)
-            return false;
-        else {
-            if (checkJoin != null)
-                if (checkJoin.getState().equals("joined"))
-                    return false;
-            if (groups.getMax_capacity() == groups.getNumber_of_users())
-                return false;
-
+            throw new ApiException("user or group not found");
+        if (checkJoin != null) {
+            if (checkJoin.getState().equals("joined")) {
+                throw new ApiException("user is already joined");
+            }
+            checkJoin.setState("joined");
+            joinRepository.save(checkJoin);
+            return;
         }
+        if (groups.getMax_capacity() == groups.getNumber_of_users())
+            throw new ApiException("group is full");
 
         joins.setUser_id(id);
         joins.setGroup_id(group_id);
         joins.setState("joined");
         groups.setNumber_of_users(groups.getNumber_of_users() + 1);
         user.setGroup_id(group_id);
-        if (checkJoin != null) {
-            checkJoin.setState("joined");
-            joinRepository.save(checkJoin);
-        } else
-            joinRepository.save(joins);
+        joinRepository.save(joins);
         groupRepository.save(groups);
         userRepository.save(user);
-        return true;
     }
 
     // endpoint 2
-    public String purchaseBook(Integer id, Integer book_id) {
+    public void purchaseBook(Integer id, Integer book_id) {
         Book book = bookRepository.findBooksById(book_id);
         User user = userRepository.findUserById(id);
         Orders orders = new Orders();
 
         if (book == null || user == null)
-            return "not found";
+            throw new ApiException("book or user not found");
         double totalPrice = (book.getPrice() * 0.15) + book.getPrice();
         if (user.getBalance() < totalPrice)
-            return "price";
+            throw new ApiException("balance is less than price");
         if (book.getStock() == 0)
-            return "stock";
+            throw new ApiException("book is out of stock");
         user.setBalance(user.getBalance() - totalPrice);
         book.setStock(book.getStock() - 1);
         orders.setTotal_price(totalPrice);
@@ -114,15 +109,14 @@ public class UserService {
         orderRepository.save(orders);
         userRepository.save(user);
         bookRepository.save(book);
-        return "purchased";
     }
 
     // endpoint 3
-    public Boolean returnBook(Integer id, Integer order_id) {
+    public void returnBook(Integer id, Integer order_id) {
         User user = userRepository.findUserById(id);
         Orders orders = orderRepository.findOrderById(order_id);
         if (user == null)
-            return false;
+            throw new ApiException("user not found");
         if (orders != null && orders.getUser_id() == user.getId() && !orders.getState().equals("returned")) {
             Book book = bookRepository.findBooksById(orders.getBook_id());
             Publisher getPublisher = userRepository.findPublisherById(book.getPublisher_id());
@@ -131,23 +125,24 @@ public class UserService {
             user.setBalance(user.getBalance() + price);
             book.setStock(book.getStock() + 1);
             orders.setState("returned");
-            publisher.setBalance(publisher.getBalance()-price);
+            publisher.setBalance(publisher.getBalance() - price);
             orderRepository.save(orders);
             userRepository.save(user);
             userRepository.save(publisher);
             bookRepository.save(book);
-            return true;
         }
-        return false;
+        throw new ApiException("book is already returned or not related to user");
     }
 
     // endpoint 4
-    public Boolean leaveGroup(Integer id, Integer group_id) {
+    public void leaveGroup(Integer id, Integer group_id) {
         Groups groups = groupRepository.findGroupById(group_id);
         User user = userRepository.findUserById(id);
         Joins joins = joinRepository.findJoinsByGroup_idAndUser_id(group_id, id);
-        if (joins == null || groups == null || user == null || !joins.getState().equals("joined"))
-            return false;
+        if (joins == null||groups == null || user == null)
+            throw new ApiException("user not joins to the group or user and group not found");
+        if (!joins.getState().equals("joined"))
+            throw new ApiException("user has already leaved");
 
         joins.setState("withdrawn");
         groups.setNumber_of_users(groups.getNumber_of_users() - 1);
@@ -155,15 +150,14 @@ public class UserService {
         groupRepository.save(groups);
         userRepository.save(user);
         joinRepository.save(joins);
-        return true;
     }
 
     // endpoint 5
-    public String signAsPublisher(Integer id, String type) {
+    public void signAsPublisher(Integer id, String type) {
         User user = userRepository.findUserById(id);
         Publisher publisher = new Publisher();
         if (user == null || user.getRole().equals("publisher"))
-            return "not found";
+            throw new ApiException("user not found or already signed as a publisher");
         publisher.setUser_id(id);
         if (type.equals("normal"))
             publisher.setType("normal");
@@ -172,70 +166,67 @@ public class UserService {
             if (user.getBalance() >= 10)
                 user.setBalance(user.getBalance() - 10);
             else
-                return "price";
+                throw new ApiException("user balance not enough");
         } else
-            return "type";
+            throw new ApiException("this type not correct");
         user.setRole("publisher");
         publisherRepository.save(publisher);
         userRepository.save(user);
-        return "done";
     }
 
     // endpoint 8
-    public Boolean addToCert(Integer id,Integer book_id){
+    public void addToCert(Integer id, Integer book_id) {
         User user = userRepository.findUserById(id);
         Book book = bookRepository.findBooksById(book_id);
         Cert cert = new Cert();
         Cert existCert = certRepository.findCertByUser_idAndBook_id(id, book_id);
-        if (user==null||book==null)
-            return false;
-        if (book.getStock()>cert.getAmount()) {
+        if (user == null || book == null)
+            throw new ApiException("user or book not found");
+        if (book.getStock() > existCert.getAmount()) {
             if (existCert != null) {
                 existCert.setAmount(existCert.getAmount() + 1);
                 certRepository.save(existCert);
-                return true;
+                return;
             }
             cert.setAmount(1);
             cert.setUser_id(id);
             cert.setBook_id(book_id);
             certRepository.save(cert);
-            return true;
+            return;
         }
-        return false;
+        throw new ApiException("book is out of stock");
     }
 
     // endpoint 9
-    public Boolean removeFromCert(Integer id, Integer book_id, Boolean removeAll){
+    public void removeFromCert(Integer id, Integer book_id, Boolean removeAll) {
         Cert cert = certRepository.findCertByUser_idAndBook_id(id, book_id);
-        if (cert==null)
-            return false;
-        if (removeAll||cert.getAmount()==1) {
+        if (cert == null)
+            throw new ApiException("cert is empty");
+        if (removeAll || cert.getAmount() == 1) {
             certRepository.delete(cert);
-            return true;
         }
 
-        cert.setAmount(cert.getAmount()-1);
+        cert.setAmount(cert.getAmount() - 1);
         certRepository.save(cert);
-        return true;
     }
 
     // endpoint 10
-    public String purchaseCert(Integer id){
+    public void purchaseCert(Integer id) {
         User user = userRepository.findUserById(id);
         List<Cert> certs = certRepository.findCertsByUserId(id);
         Orders orders = new Orders();
 
-        if (user==null)
-            return "not found";
+        if (user == null)
+            throw new ApiException("user not found");
         if (certs.isEmpty())
-            return "empty";
+            throw new ApiException("cert is empty");
 
-        for (Cert c:certs){
+        for (Cert c : certs) {
             Book book = bookRepository.findBooksById(c.getBook_id());
-            if (book.getStock()==0)
-                return "stock";
+            if (book.getStock() == 0)
+                throw new ApiException("book is out of stock");
 
-            double totalPrice = ((book.getPrice() * 0.15) + book.getPrice())*c.getAmount();
+            double totalPrice = ((book.getPrice() * 0.15) + book.getPrice()) * c.getAmount();
             book.setStock(book.getStock() - c.getAmount());
             orders.setTotal_price(totalPrice);
             orders.setUser_id(id);
@@ -244,71 +235,65 @@ public class UserService {
             orderRepository.save(orders);
 
             if (user.getBalance() < totalPrice)
-                return "price";
-            user.setBalance(user.getBalance()-totalPrice);
+                throw new ApiException("balance is less the total price");
+            user.setBalance(user.getBalance() - totalPrice);
             userRepository.save(user);
         }
-        return "purchased";
     }
 
     // endpoint 11
-    public Boolean deposit(Integer id,Double amount){
+    public void deposit(Integer id, Double amount) {
         User user = userRepository.findUserById(id);
-        if (user==null)
-            return false;
-        user.setBalance(user.getBalance()+amount);
+        if (user == null)
+            throw new ApiException("user not found");
+        user.setBalance(user.getBalance() + amount);
         userRepository.save(user);
-        return true;
     }
 
     // endpoint 12
-    public Boolean withdrawBalance(Integer id,Double amount){
+    public void withdrawBalance(Integer id, Double amount) {
         User user = userRepository.findUserById(id);
-        if (user==null)
-            return false;
-        if (user.getBalance()>=amount) {
+        if (user == null)
+            throw new ApiException("user not found");
+        if (user.getBalance() >= amount) {
             user.setBalance(user.getBalance() - amount);
             userRepository.save(user);
-            return true;
         }
-        return false;
+        throw new ApiException("user's balance doesn't have this amount");
     }
 
     // endpoint 13
-    public Boolean startReading(Integer id){
+    public void startReading(Integer id) {
         User user = userRepository.findUserById(id);
         Reading reading = new Reading();
 
-        if (user==null)
-            return false;
+        if (user == null)
+            throw new ApiException("user not found");
         Groups groups = groupRepository.findGroupById(user.getGroup_id());
-        if (groups==null)
-            return false;
-        Joins joins = joinRepository.findJoinsByGroup_idAndUser_id(groups.getId(),id);
-        if (joins==null||joins.getState().equals("withdrawn"))
-            return false;
+        if (groups == null)
+            throw new ApiException("group not found");
+        Joins joins = joinRepository.findJoinsByGroup_idAndUser_id(groups.getId(), id);
+        if (joins == null || joins.getState().equals("withdrawn"))
+            throw new ApiException("user not in group to reading");
         reading.setBook_id(groups.getBook_id());
         reading.setUser_id(id);
         reading.setState("start");
         reading.setReadingStart(LocalDate.now());
         readingRepository.save(reading);
-        return true;
     }
 
     // endpoint 14
     // to sign user reading state as finish reading book at least one day after start reading
-    public Boolean finishReading(Integer id, Integer book_id){
-        Reading reading = readingRepository.findReadingByBook_idAndUser_id(book_id,id);
-        if (reading==null||reading.getState().equals("done"))
-            return false;
-        if (reading.getReadingStart().isBefore(LocalDate.now())){
+    public void finishReading(Integer id, Integer book_id) {
+        Reading reading = readingRepository.findReadingByBook_idAndUser_id(book_id, id);
+        if (reading == null || reading.getState().equals("done"))
+            throw new ApiException("user haven't start reading yet, or reading already finished");
+        if (reading.getReadingStart().isBefore(LocalDate.now())) {
             reading.setState("done");
             reading.setReadingFinish(LocalDate.now());
             readingRepository.save(reading);
-            return true;
         }
-        return false;
+        throw new ApiException("you need at least one day past to finish reading");
     }
-
 
 }

@@ -1,5 +1,6 @@
 package com.example.capstone02_bookfriend.Service;
 
+import com.example.capstone02_bookfriend.ApiResponse.ApiException;
 import com.example.capstone02_bookfriend.Model.Book;
 import com.example.capstone02_bookfriend.Model.Orders;
 import com.example.capstone02_bookfriend.Model.User;
@@ -23,36 +24,33 @@ public class OrdersService {
         return orderRepository.findAll();
     }
 
-    public Boolean addOrder(Orders orders) {
+    public void addOrder(Orders orders) {
         Book book = bookRepository.findBooksById(orders.getBook_id());
         User user = userRepository.findUserById(orders.getUser_id());
         if (book == null || user == null)
-            return false;
+            throw new ApiException("user or book not found");
         orderRepository.save(orders);
-        return true;
     }
 
-    public Boolean updateOrder(Integer id,Orders orders) {
+    public void updateOrder(Integer id,Orders orders) {
         Orders oldOrder = orderRepository.findOrderById(id);
         Book book = bookRepository.findBooksById(orders.getBook_id());
         User user = userRepository.findUserById(orders.getUser_id());
         if (book == null || user == null||oldOrder==null)
-            return false;
+            throw new ApiException("user, book or order not found");
 
         oldOrder.setState(orders.getState());
         oldOrder.setUser_id(orders.getUser_id());
         oldOrder.setBook_id(orders.getBook_id());
         oldOrder.setTotal_price(orders.getTotal_price());
         orderRepository.save(oldOrder);
-        return true;
 
     }
 
-    public Boolean deleteOrder(Integer id) {
+    public void deleteOrder(Integer id) {
         Orders orders = orderRepository.findOrderById(id);
         if (orders==null)
-            return false;
+            throw new ApiException("order not found");
         orderRepository.delete(orders);
-        return true;
     }
 }

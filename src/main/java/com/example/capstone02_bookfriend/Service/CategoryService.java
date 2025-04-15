@@ -1,5 +1,6 @@
 package com.example.capstone02_bookfriend.Service;
 
+import com.example.capstone02_bookfriend.ApiResponse.ApiException;
 import com.example.capstone02_bookfriend.Model.Category;
 import com.example.capstone02_bookfriend.Repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,34 +18,31 @@ public class CategoryService {
         return categoryRepository.findAll();
     }
 
-    public Boolean addCategory(Category category) {
+    public void addCategory(Category category) {
         Category oldCategory = categoryRepository.findCategoryByName(category.getName());
 
         if (oldCategory == null) {
             categoryRepository.save(category);
-            return true;
         }
-        return false;
+        throw new ApiException("category name is already exist");
     }
 
-    public Boolean updateCategory(Integer id, Category category) {
+    public void updateCategory(Integer id, Category category) {
         Category oldCategory = categoryRepository.findCategoryById(id);
         Category checkName = categoryRepository.findCategoryByName(category.getName());
         if (oldCategory == null || checkName != null)
-            return false;
+            throw new ApiException("category not found or name already used");
 
         oldCategory.setName(category.getName());
         categoryRepository.save(oldCategory);
-        return true;
     }
 
-    public Boolean deleteCategory(Integer id) {
+    public void deleteCategory(Integer id) {
         Category category = categoryRepository.findCategoryById(id);
 
         if (category == null)
-            return false;
+            throw new ApiException("category not found");
         categoryRepository.delete(category);
-        return true;
     }
 
 }
