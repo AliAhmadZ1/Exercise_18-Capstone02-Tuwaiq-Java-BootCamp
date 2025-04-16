@@ -17,38 +17,26 @@ public class JoinsController {
     private final JoinsService joinsService;
 
     @GetMapping("/get")
-    public ResponseEntity getAllJoins(){
-        if (joinsService.getAllJoins().isEmpty())
-            return ResponseEntity.status(400).body(new ApiResponse("there are no joins"));
+    public ResponseEntity getAllJoins() {
         return ResponseEntity.status(200).body(joinsService.getAllJoins());
     }
 
     @PostMapping("/add")
-    public ResponseEntity add(@RequestBody @Valid Joins joins, Errors errors){
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isAdded = joinsService.addJoin(joins);
-        if (isAdded)
-            return ResponseEntity.status(200).body(new ApiResponse("new join is added"));
-        return ResponseEntity.status(400).body(new ApiResponse("join is already exist"));
+    public ResponseEntity add(@RequestBody @Valid Joins joins, Errors errors) {
+        joinsService.addJoin(joins);
+        return ResponseEntity.status(200).body(new ApiResponse("new join is added"));
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity updateJoin(@PathVariable Integer id,@RequestBody@Valid Joins joins, Errors errors){
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isUpdated = joinsService.updateJoin(id, joins);
-        if (isUpdated)
-            return ResponseEntity.status(200).body(new ApiResponse("is updated"));
-        return ResponseEntity.status(400).body(new ApiResponse("is already exist"));
+    public ResponseEntity updateJoin(@PathVariable Integer id, @RequestBody @Valid Joins joins, Errors errors) {
+        joinsService.updateJoin(id, joins);
+        return ResponseEntity.status(200).body(new ApiResponse("is updated"));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity delete(@PathVariable Integer id){
-        boolean isDeleted = joinsService.deleteJoin(id);
-        if (isDeleted)
-            return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found"));
+    public ResponseEntity delete(@PathVariable Integer id) {
+        joinsService.deleteJoin(id);
+        return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
     }
 
 

@@ -18,38 +18,26 @@ public class ReadingController {
 
     @GetMapping("/get")
     public ResponseEntity getAllReadings(){
-        if (readingService.getAllReadings().isEmpty())
-            return ResponseEntity.status(400).body(new ApiResponse("there are no readings"));
-        return ResponseEntity.status(200).body(readingService.getAllReadings());
+           return ResponseEntity.status(200).body(readingService.getAllReadings());
     }
 
     @PostMapping("/add")
-    public ResponseEntity addReading(@RequestBody @Valid Reading reading, Errors errors){
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isAdded = readingService.addReading(reading);
-        if (isAdded)
+    public ResponseEntity addReading(@RequestBody @Valid Reading reading){
+       readingService.addReading(reading);
             return ResponseEntity.status(200).body(new ApiResponse("new reading is added"));
-        return ResponseEntity.status(400).body(new ApiResponse("reading is already exist"));
-    }
+   }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity updateReading(@PathVariable Integer id,@RequestBody@Valid Reading reading, Errors errors){
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isUpdated = readingService.updateReading(id, reading);
-        if (isUpdated)
-            return ResponseEntity.status(200).body(new ApiResponse("is updated"));
-        return ResponseEntity.status(400).body(new ApiResponse("user, book or reading not found"));
+    public ResponseEntity updateReading(@PathVariable Integer id,@RequestBody@Valid Reading reading){
+     readingService.updateReading(id, reading);
+             return ResponseEntity.status(200).body(new ApiResponse("is updated"));
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity deleteReading(@PathVariable Integer id){
-        boolean isDeleted = readingService.deleteReading(id);
-        if (isDeleted)
+        readingService.deleteReading(id);
             return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found"));
-    }
+     }
 
 
 }

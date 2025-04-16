@@ -18,46 +18,32 @@ public class GroupsController {
 
     @GetMapping("/get")
     public ResponseEntity getAll(){
-        if (groupsService.getAllgroups().isEmpty())
-            return ResponseEntity.status(400).body(new ApiResponse("there are no groups"));
         return ResponseEntity.status(200).body(groupsService.getAllgroups());
     }
 
     @PostMapping("/add")
     public ResponseEntity addGroup(@RequestBody@Valid Groups groups, Errors errors){
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isAdded = groupsService.addGroup(groups);
-        if (isAdded)
+      groupsService.addGroup(groups);
             return ResponseEntity.status(200).body(new ApiResponse("new group is added"));
-        return ResponseEntity.status(400).body(new ApiResponse("group name is already exist"));
-    }
+     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity updateGroup(@PathVariable Integer id,@RequestBody@Valid Groups groups, Errors errors){
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isUpdated = groupsService.updateGroup(id, groups);
-        if (isUpdated)
-            return ResponseEntity.status(200).body(new ApiResponse("is updated"));
-        return ResponseEntity.status(400).body(new ApiResponse("group name is already exist"));
-    }
+      groupsService.updateGroup(id, groups);
+             return ResponseEntity.status(200).body(new ApiResponse("is updated"));
+     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity deleteGroup(@PathVariable Integer id){
-        boolean isDeleted = groupsService.deleteGroup(id);
-        if (isDeleted)
+      groupsService.deleteGroup(id);
             return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found"));
     }
 
     // endpoint 15
     @PutMapping("/reviewed/{id},{user_id}")
     public ResponseEntity reviewedBook(@PathVariable Integer id, @PathVariable Integer user_id){
-        boolean isReviewed = groupsService.reviewedBook(id, user_id);
-        if (isReviewed)
-            return ResponseEntity.status(200).body(new ApiResponse("user finish reviewed"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found or not finish reading"));
+      groupsService.reviewedBook(id, user_id);
+         return ResponseEntity.status(200).body(new ApiResponse("user finish reviewed"));
     }
 
 

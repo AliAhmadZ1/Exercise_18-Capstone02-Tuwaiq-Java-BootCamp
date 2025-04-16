@@ -19,36 +19,24 @@ public class CertController {
 
     @GetMapping("/get")
     public ResponseEntity getAllCerts() {
-        if (certService.getAllCerts().isEmpty())
-            return ResponseEntity.status(400).body(new ApiResponse("there are no certs"));
         return ResponseEntity.status(200).body(certService.getAllCerts());
     }
 
     @PostMapping("/add")
     public ResponseEntity addCert(@RequestBody @Valid Cert cert, Errors errors) {
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isAdded = certService.addCert(cert);
-        if (isAdded)
-            return ResponseEntity.status(200).body(new ApiResponse("new cert is added"));
-        return ResponseEntity.status(400).body(new ApiResponse("user or book not found"));
+        certService.addCert(cert);
+        return ResponseEntity.status(200).body(new ApiResponse("new cert is added"));
     }
 
     @PutMapping("/update/{id}")
     public ResponseEntity updateCert(@PathVariable Integer id, @RequestBody @Valid Cert cert, Errors errors) {
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isUpdated = certService.updateCert(id, cert);
-        if (isUpdated)
-            return ResponseEntity.status(200).body(new ApiResponse("is updated"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found or already exist"));
+        certService.updateCert(id, cert);
+        return ResponseEntity.status(200).body(new ApiResponse("is updated"));
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity deleteCert(@PathVariable Integer id) {
-        boolean isDeleted = certService.deleteCert(id);
-        if (isDeleted)
-            return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found"));
+        certService.deleteCert(id);
+        return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
     }
 }

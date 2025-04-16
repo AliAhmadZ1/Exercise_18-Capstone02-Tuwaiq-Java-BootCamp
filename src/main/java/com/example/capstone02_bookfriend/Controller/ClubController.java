@@ -18,37 +18,25 @@ public class ClubController {
 
     @GetMapping("/get")
     public ResponseEntity getAllClubs() {
-        if (clubService.getAllClubs().isEmpty())
-            return ResponseEntity.status(400).body(new ApiResponse("there are no clubs"));
         return ResponseEntity.status(200).body(clubService.getAllClubs());
     }
 
     @PostMapping("/add")
-    public ResponseEntity addClub(@RequestBody@Valid Club club, Errors errors) {
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isAdded = clubService.addClub(club);
-        if (isAdded)
-            return ResponseEntity.status(200).body(new ApiResponse("new club is added"));
-        return ResponseEntity.status(400).body(new ApiResponse("group or category not found"));
+    public ResponseEntity addClub(@RequestBody @Valid Club club, Errors errors) {
+        clubService.addClub(club);
+        return ResponseEntity.status(200).body(new ApiResponse("new club is added"));
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity updateClub(@PathVariable Integer id, @RequestBody@Valid Club club, Errors errors) {
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isUpdated = clubService.updateClub(id, club);
-        if (isUpdated)
-            return ResponseEntity.status(200).body(new ApiResponse("is updated"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found or already exist"));
+    public ResponseEntity updateClub(@PathVariable Integer id, @RequestBody @Valid Club club, Errors errors) {
+        clubService.updateClub(id, club);
+        return ResponseEntity.status(200).body(new ApiResponse("is updated"));
     }
 
     @DeleteMapping("/delete/{id}")
     public ResponseEntity deleteClub(@PathVariable Integer id) {
-        boolean isDeleted = clubService.deleteClub(id);
-        if (isDeleted)
-            return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found"));
+        clubService.deleteClub(id);
+        return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
     }
 
 }

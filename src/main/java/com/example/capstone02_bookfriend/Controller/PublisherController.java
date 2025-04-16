@@ -18,64 +18,46 @@ public class PublisherController {
     private final PublisherService publisherService;
 
     @GetMapping("/get")
-    public ResponseEntity getAll(){
-        if (publisherService.getAllPublishers().isEmpty())
-            return ResponseEntity.status(400).body(new ApiResponse("there are no publishers"));
+    public ResponseEntity getAll() {
         return ResponseEntity.status(200).body(publisherService.getAllPublishers());
     }
 
     @PostMapping("/add")
-    public ResponseEntity addPublisher(@RequestBody @Valid Publisher publisher, Errors errors){
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isAdded = publisherService.addPublisher(publisher);
-        if (isAdded)
-            return ResponseEntity.status(200).body(new ApiResponse("new publisher is added"));
-        return ResponseEntity.status(400).body(new ApiResponse("publisher is already exist"));
+    public ResponseEntity addPublisher(@RequestBody @Valid Publisher publisher, Errors errors) {
+        publisherService.addPublisher(publisher);
+        return ResponseEntity.status(200).body(new ApiResponse("new publisher is added"));
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity updatePublisher(@PathVariable Integer id,@RequestBody@Valid Publisher publisher, Errors errors){
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isUpdated = publisherService.updatePublisher(id, publisher);
-        if (isUpdated)
-            return ResponseEntity.status(200).body(new ApiResponse("is updated"));
-        return ResponseEntity.status(400).body(new ApiResponse("publisher is already exist"));
+    public ResponseEntity updatePublisher(@PathVariable Integer id, @RequestBody @Valid Publisher publisher, Errors errors) {
+        publisherService.updatePublisher(id, publisher);
+        return ResponseEntity.status(200).body(new ApiResponse("is updated"));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity deletePublisher(@PathVariable Integer id){
-        boolean isDeleted = publisherService.deletePublisher(id);
-        if (isDeleted)
-            return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found"));
+    public ResponseEntity deletePublisher(@PathVariable Integer id) {
+        publisherService.deletePublisher(id);
+        return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
     }
 
     //endpoint 6
     @PutMapping("/add-stock/{user_id},{book_id},{stock}")
-    public ResponseEntity addStock(@PathVariable Integer user_id,@PathVariable Integer book_id,@PathVariable Integer stock){
-        boolean isStocked = publisherService.addStock(user_id, book_id, stock);
-        if (isStocked)
-            return ResponseEntity.status(200).body(new ApiResponse("book stocked done!!"));
-        return ResponseEntity.status(400).body(new ApiResponse("book or publisher not found"));
+    public ResponseEntity addStock(@PathVariable Integer user_id, @PathVariable Integer book_id, @PathVariable Integer stock) {
+        publisherService.addStock(user_id, book_id, stock);
+        return ResponseEntity.status(200).body(new ApiResponse("book stocked done!!"));
     }
 
     // endpoint 7
     @PutMapping("/checkout-order/{id},{order_id}")
-    public ResponseEntity checkoutOrder(@PathVariable Integer id, @PathVariable Integer order_id){
-        boolean isCompleted = publisherService.checkoutOrder(id, order_id);
-        if (isCompleted)
-            return ResponseEntity.status(200).body(new ApiResponse("order is completed"));
-        return ResponseEntity.status(400).body(new ApiResponse("publisher or order not found. Or publisher and order not related or order is already completed"));
+    public ResponseEntity checkoutOrder(@PathVariable Integer id, @PathVariable Integer order_id) {
+        publisherService.checkoutOrder(id, order_id);
+        return ResponseEntity.status(200).body(new ApiResponse("order is completed"));
     }
 
     // endpoint 16
     @PutMapping("/add-offer/{id},{percent}")
-    public ResponseEntity addOffer(@PathVariable Integer id, @PathVariable Double percent){
-        boolean isAdded = publisherService.addOffer(id, percent);
-        if (isAdded)
-            return ResponseEntity.status(200).body(new ApiResponse("new Offer is added"));
-        return ResponseEntity.status(400).body(new ApiResponse("nof found or percent is not applicable"));
+    public ResponseEntity addOffer(@PathVariable Integer id, @PathVariable Double percent) {
+        publisherService.addOffer(id, percent);
+        return ResponseEntity.status(200).body(new ApiResponse("new Offer is added"));
     }
 }

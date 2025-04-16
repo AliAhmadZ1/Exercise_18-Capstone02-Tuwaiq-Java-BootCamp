@@ -18,37 +18,25 @@ public class CategoryController {
 
     @GetMapping("/get")
     public ResponseEntity getAll() {
-        if (categoryService.getAllCategories().isEmpty())
-            return ResponseEntity.status(400).body(new ApiResponse("there are no categories"));
-        return ResponseEntity.status(200).body(categoryService.getAllCategories());
+       return ResponseEntity.status(200).body(categoryService.getAllCategories());
     }
 
     @PostMapping("/add")
-    public ResponseEntity addCategory(@RequestBody @Valid Category category, Errors errors) {
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isAdded = categoryService.addCategory(category);
-        if (isAdded)
-            return ResponseEntity.status(200).body(new ApiResponse("new category is added"));
-        return ResponseEntity.status(400).body(new ApiResponse("this category is already exist"));
+    public ResponseEntity addCategory(@RequestBody @Valid Category category) {
+        categoryService.addCategory(category);
+        return ResponseEntity.status(200).body(new ApiResponse("new category is added"));
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity updateCategory(@PathVariable Integer id,@RequestBody@Valid Category category,Errors errors){
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isUpdated = categoryService.updateCategory(id, category);
-        if (isUpdated)
-            return ResponseEntity.status(200).body(new ApiResponse("category is updated"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found or category is already exist"));
+    public ResponseEntity updateCategory(@PathVariable Integer id, @RequestBody @Valid Category category, Errors errors) {
+        categoryService.updateCategory(id, category);
+        return ResponseEntity.status(200).body(new ApiResponse("category is updated"));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity deleteCategory(@PathVariable Integer id){
-        boolean isDeleted = categoryService.deleteCategory(id);
-        if (isDeleted)
-            return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found"));
+    public ResponseEntity deleteCategory(@PathVariable Integer id) {
+        categoryService.deleteCategory(id);
+        return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
     }
 
 }

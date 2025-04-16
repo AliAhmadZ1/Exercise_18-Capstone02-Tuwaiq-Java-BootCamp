@@ -17,38 +17,28 @@ public class BookController {
     private final BookService bookService;
 
     @GetMapping("/get")
-    public ResponseEntity getAllBooks(){
-        if (bookService.getAllBooks().isEmpty())
-            return ResponseEntity.status(400).body(new ApiResponse("there are no books"));
+    public ResponseEntity getAllBooks() {
+//        if (bookService.getAllBooks().isEmpty())
+//            return ResponseEntity.status(400).body(new ApiResponse("there are no books"));
         return ResponseEntity.status(200).body(bookService.getAllBooks());
     }
 
     @PostMapping("/add")
-    public ResponseEntity addBook(@RequestBody@Valid Book book, Errors errors){
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isAdded = bookService.addBook(book);
-        if (isAdded)
-            return ResponseEntity.status(200).body(new ApiResponse("new book is added"));
-        return ResponseEntity.status(400).body(new ApiResponse("publisher or category not found / or book is already exist"));
+    public ResponseEntity addBook(@RequestBody @Valid Book book) {
+        bookService.addBook(book);
+        return ResponseEntity.status(200).body(new ApiResponse("new book is added"));
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity updateBook(@PathVariable Integer id,@RequestBody@Valid Book book,Errors errors){
-        if (errors.hasErrors())
-            return ResponseEntity.status(400).body(new ApiResponse(errors.getFieldError().getDefaultMessage()));
-        boolean isUpdated = bookService.updateBook(id, book);
-        if (isUpdated)
-            return ResponseEntity.status(200).body(new ApiResponse("is updated"));
-        return ResponseEntity.status(400).body(new ApiResponse("book, publisher or category not found. if you want change ISBN, publisher or category contact support team"));
+    public ResponseEntity updateBook(@PathVariable Integer id, @RequestBody @Valid Book book) {
+        bookService.updateBook(id, book);
+        return ResponseEntity.status(200).body(new ApiResponse("is updated"));
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity deleteBooK(@PathVariable Integer id){
-        boolean isDeleted = bookService.deleteBook(id);
-        if (isDeleted)
-            return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
-        return ResponseEntity.status(400).body(new ApiResponse("not found"));
+    public ResponseEntity deleteBooK(@PathVariable Integer id) {
+        bookService.deleteBook(id);
+        return ResponseEntity.status(200).body(new ApiResponse("is deleted"));
     }
 
 
