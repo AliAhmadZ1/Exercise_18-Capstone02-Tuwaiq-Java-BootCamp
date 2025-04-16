@@ -1,5 +1,6 @@
 package com.example.capstone02_bookfriend.Service;
 
+import com.example.capstone02_bookfriend.ApiResponse.ApiException;
 import com.example.capstone02_bookfriend.Model.Groups;
 import com.example.capstone02_bookfriend.Model.Club;
 import com.example.capstone02_bookfriend.Model.Category;
@@ -23,37 +24,37 @@ public class ClubService {
         return clubRepository.findAll();
     }
 
-    public Boolean addClub(Club club) {
+    public void addClub(Club club) {
         Groups groups = groupRepository.findGroupById(club.getGroup_id());
         Category category = categoryRepository.findCategoryById(club.getCategory_id());
         if (groups==null||category==null)
-            return false;
+            throw new ApiException("group or category not found");
         clubRepository.save(club);
-        return true;
+
     }
 
-    public Boolean updateClub(Integer id, Club club) {
+    public void updateClub(Integer id, Club club) {
         Groups groups = groupRepository.findGroupById(club.getGroup_id());
         Category category = categoryRepository.findCategoryById(club.getCategory_id());
         if (groups==null||category==null)
-            return false;
+            throw new ApiException("group or category not found");
         Club oldClub = clubRepository.findClubById(id);
         if (oldClub == null)
-            return false;
+            throw new ApiException("not found");
 
         oldClub.setCategory_id(club.getCategory_id());
         oldClub.setName(club.getName());
         oldClub.setGroup_id(club.getGroup_id());
         oldClub.setNumber_of_groups(club.getNumber_of_groups());
         clubRepository.save(oldClub);
-        return true;
+
     }
 
-    public Boolean deleteClub(Integer id){
+    public void deleteClub(Integer id){
         Club club = clubRepository.findClubById(id);
         if (club==null)
-            return false;
+            throw new ApiException("club not found");
         clubRepository.delete(club);
-        return true;
+
     }
 }

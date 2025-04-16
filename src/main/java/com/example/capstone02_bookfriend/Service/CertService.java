@@ -1,5 +1,6 @@
 package com.example.capstone02_bookfriend.Service;
 
+import com.example.capstone02_bookfriend.ApiResponse.ApiException;
 import com.example.capstone02_bookfriend.Model.Book;
 import com.example.capstone02_bookfriend.Model.Cert;
 import com.example.capstone02_bookfriend.Model.User;
@@ -23,15 +24,15 @@ public class CertService {
         return certRepository.findAll();
     }
 
-    public Boolean addCert(Cert cert) {
+    public void addCert(Cert cert) {
         Book book = bookRepository.findBooksById(cert.getBook_id());
         User user = userRepository.findUserById(cert.getUser_id());
         if (book==null||user==null)
-            return false;
+            throw new ApiException("book or user not found");
         Cert oldCert = certRepository.findCertByUserId(cert.getUser_id());
         if (oldCert==null) {
             certRepository.save(cert);
-            return true;
+
         }
         if (oldCert.getBook_id() == cert.getBook_id()) {
             oldCert.setAmount(cert.getAmount() + 1);
@@ -41,17 +42,17 @@ public class CertService {
             oldCert.setBook_id(cert.getBook_id());
             certRepository.save(cert);
         }
-        return true;
+
     }
 
-    public Boolean updateCert(Integer id, Cert cert) {
+    public void updateCert(Integer id, Cert cert) {
         Book book = bookRepository.findBooksById(cert.getBook_id());
         User user = userRepository.findUserById(cert.getUser_id());
         if (book==null||user==null)
-            return false;
+            throw new ApiException("book or user not found");
         Cert oldCert = certRepository.findCertById(id);
         if (oldCert == null)
-            return false;
+            throw new ApiException("cert not found");
 
         oldCert.setBook_id(cert.getBook_id());
         oldCert.setUser_id(cert.getUser_id());
@@ -60,15 +61,15 @@ public class CertService {
         else
             oldCert.setAmount(1);
         certRepository.save(oldCert);
-        return true;
+
     }
 
-    public Boolean deleteCert(Integer id){
+    public void deleteCert(Integer id){
         Cert cert = certRepository.findCertById(id);
         if (cert==null)
-            return false;
+            throw new ApiException("cert not found");
         certRepository.delete(cert);
-        return true;
+
     }
 
 

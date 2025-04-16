@@ -1,5 +1,6 @@
 package com.example.capstone02_bookfriend.Service;
 
+import com.example.capstone02_bookfriend.ApiResponse.ApiException;
 import com.example.capstone02_bookfriend.Model.Groups;
 import com.example.capstone02_bookfriend.Model.Joins;
 import com.example.capstone02_bookfriend.Model.Reading;
@@ -27,20 +28,20 @@ public class GroupsService {
         return groupRepository.findAll();
     }
 
-    public Boolean addGroup(Groups groups) {
+    public void addGroup(Groups groups) {
         Groups existGroup = groupRepository.findGroupsByName(groups.getName());
         if (existGroup == null) {
             groupRepository.save(groups);
-            return true;
+            return;
         }
-        return false;
+        throw new ApiException("group name is already used");
     }
 
-    public Boolean updateGroup(Integer id, Groups groups) {
+    public void updateGroup(Integer id, Groups groups) {
         Groups oldGroup = groupRepository.findGroupById(id);
         Groups existGroup = groupRepository.findGroupsByName(groups.getName());
         if (oldGroup == null || existGroup != null)
-            return false;
+            throw new ApiException("not found or already used");
 
         oldGroup.setName(groups.getName());
         oldGroup.setUser_id(groups.getUser_id());
@@ -48,36 +49,36 @@ public class GroupsService {
         oldGroup.setMax_capacity(groups.getMax_capacity());
         oldGroup.setNumber_of_users(groups.getNumber_of_users());
         groupRepository.save(oldGroup);
-        return true;
+
     }
 
-    public Boolean deleteGroup(Integer id) {
+    public void deleteGroup(Integer id) {
         Groups groups = groupRepository.findGroupById(id);
         if (groups == null)
-            return false;
+            throw new ApiException("not found");
         groupRepository.delete(groups);
-        return true;
+
     }
 
     // endpoint 15
-    public Boolean reviewedBook(Integer id, Integer user_id){
+    public void reviewedBook(Integer id, Integer user_id){
         User leader = userRepository.findUserById(id);
         User user = userRepository.findUserById(user_id);
         if (leader==null||user==null)
-            return false;
+            throw new ApiException("user or leader not found");
         Groups groups = groupRepository.findGroupsByUser_id(id);
         if (groups==null)
-            return false;
+            throw new ApiException("they not members for any group");
         Joins joins = joinRepository.findJoinsByGroup_idAndUser_id(groups.getId(), user_id);
         Reading reading = readingRepository.findReadingByBook_idAndUser_id(groups.getBook_id(), user_id);
         if (joins==null||reading==null)
-            return false;
+            throw new ApiException("not joined to group or not finish reading");
         if (reading.getState().equals("done")){
             reading.setState("reviewed");
             readingRepository.save(reading);
-            return true;
+            return;
         }
-        return false;
+        throw new ApiException("already reviewed");
     }
 
 }

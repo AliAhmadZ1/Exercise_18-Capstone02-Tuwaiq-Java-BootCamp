@@ -1,5 +1,6 @@
 package com.example.capstone02_bookfriend.Service;
 
+import com.example.capstone02_bookfriend.ApiResponse.ApiException;
 import com.example.capstone02_bookfriend.Model.Groups;
 import com.example.capstone02_bookfriend.Model.Joins;
 import com.example.capstone02_bookfriend.Model.User;
@@ -23,39 +24,36 @@ public class JoinsService {
         return joinRepository.findAll();
     }
 
-    public Boolean addJoin(Joins joins){
+    public void addJoin(Joins joins){
         User user = userRepository.findUserById(joins.getUser_id());
         Groups groups = groupRepository.findGroupById(joins.getGroup_id());
         Joins existJoin = joinRepository.findJoinsByGroup_idAndUser_id(joins.getGroup_id(), joins.getUser_id());
         if (user==null||groups==null||existJoin!=null)
-            return false;
+            throw new ApiException("not found or already exist");
 
         joinRepository.save(joins);
-        return true;
     }
 
-    public Boolean updateJoin(Integer id,Joins joins){
+    public void updateJoin(Integer id,Joins joins){
         User user = userRepository.findUserById(joins.getUser_id());
         Groups groups = groupRepository.findGroupById(joins.getGroup_id());
         Joins existJoins = joinRepository.findJoinsByGroup_idAndUser_id(joins.getGroup_id(), joins.getUser_id());
         if (user==null||groups==null||existJoins!=null)
-            return false;
+            throw new ApiException("not found or already exist");
 
         Joins oldJoins = joinRepository.findJoinById(id);
         oldJoins.setGroup_id(joins.getGroup_id());
         oldJoins.setState(joins.getState());
         oldJoins.setUser_id(joins.getUser_id());
         joinRepository.save(oldJoins);
-        return true;
     }
 
-    public Boolean deleteJoin(Integer id){
+    public void deleteJoin(Integer id){
         Joins joins = joinRepository.findJoinById(id);
 
         if (joins==null)
-            return false;
+            throw new ApiException("join not found");
         joinRepository.delete(joins);
-        return true;
     }
 }
 
